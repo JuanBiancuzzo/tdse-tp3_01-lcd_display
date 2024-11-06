@@ -12,6 +12,12 @@
 
 #define DISPLAY_REFRESH_TIME_MS 1000
 
+#define DISPLAY_CONECCION_I2C 2
+#define DISPLAY_CONECCION_4_BIT 4
+#define DISPLAY_CONECCION_8_BIT 8
+
+#define DISPLAY_CONECCION DISPLAY_CONECCION_I2C
+
 //=====[Declaration of private data types]=====================================
 
 //=====[Declaration and initialization of public global objects]===============
@@ -33,10 +39,6 @@ static int numberOfCodeChars = 0;
 
 //=====[Declarations (prototypes) of private functions]========================
 
-static void userInterfaceMatrixKeypadUpdate();
-static void incorrectCodeIndicatorUpdate();
-static void systemBlockedIndicatorUpdate();
-
 static void userInterfaceDisplayInit();
 static void userInterfaceDisplayUpdate();
 
@@ -44,68 +46,37 @@ static void userInterfaceDisplayUpdate();
 
 void userInterfaceInit()
 {
-    incorrectCodeLed = OFF;
-    systemBlockedLed = OFF;
     userInterfaceDisplayInit();
 }
 
 void userInterfaceUpdate()
 {
-    userInterfaceMatrixKeypadUpdate();
-    incorrectCodeIndicatorUpdate();
-    systemBlockedIndicatorUpdate();
     userInterfaceDisplayUpdate();
-}
-
-bool incorrectCodeStateRead()
-{
-    return incorrectCodeState;
-}
-
-void incorrectCodeStateWrite( bool state )
-{
-    incorrectCodeState = state;
-}
-
-bool systemBlockedStateRead()
-{
-    return systemBlockedState;
-}
-
-void systemBlockedStateWrite( bool state )
-{
-    systemBlockedState = state;
-}
-
-bool userInterfaceCodeCompleteRead()
-{
-    return codeComplete;
-}
-
-void userInterfaceCodeCompleteWrite( bool state )
-{
-    codeComplete = state;
 }
 
 //=====[Implementations of private functions]==================================
 
 static void userInterfaceDisplayInit()
 {
-    displayInit( DISPLAY_CONNECTION_I2C_PCF8574_IO_EXPANDER );
+
+    #if DISPLAY_CONECCION == DISPLAY_CONECCION_I2C
+        displayInit(DISPLAY_CONNECTION_I2C_PCF8574_IO_EXPANDER);
+
+    #elif DISPLAY_CONECCION == DISPLAY_CONECCION_4_BIT
+        displayInit(DISPLAY_CONNECTION_GPIO_4BITS);
+
+    #elif DISPLAY_CONECCION == DISPLAY_CONECCION_8_BIT
+        displayInit(DISPLAY_CONNECTION_GPIO_8BITS);
+        
+    #endif
      
     displayCharPositionWrite ( 0,0 );
     displayStringWrite( "Temperature:" );
-
-    displayCharPositionWrite ( 0,1 );
-    displayStringWrite( "Gas:" );
-    
-    displayCharPositionWrite ( 0,2 );
-    displayStringWrite( "Alarm:" );
 }
 
 static void userInterfaceDisplayUpdate()
 {
-    /* static int accumulatedDisplayTime = 0;
+    static int accumulatedDisplayTime = 0;
     char temperatureString[3] = "";
     
     if( accumulatedDisplayTime >=
@@ -113,32 +84,19 @@ static void userInterfaceDisplayUpdate()
 
         accumulatedDisplayTime = 0;
 
-        sprintf(temperatureString, "%.0f", temperatureSensorReadCelsius());
-        displayCharPositionWrite ( 12,0 );
-        displayStringWrite( temperatureString );
-        displayCharPositionWrite ( 14,0 );
-        displayStringWrite( "'C" );
+        //sprintf(temperatureString, "%.0f", temperatureSensorReadCelsius());
+        sprintf(temperatureString, "%.0f", 30.0f);
+        displayCharPositionWrite(12, 0);
+        displayStringWrite(temperatureString);
+        displayCharPositionWrite(14, 0);
+        displayStringWrite("'C");
 
-        displayCharPositionWrite ( 4,1 );
-
-        if ( gasDetectorStateRead() ) {
-            displayStringWrite( "Detected    " );
-        } else {
-            displayStringWrite( "Not Detected" );
-        }
-
-        displayCharPositionWrite ( 6,2 );
-        
-        if ( sirenStateRead() ) {
-            displayStringWrite( "ON " );
-        } else {
-            displayStringWrite( "OFF" );
-        }
+        displayCharPositionWrite(4, 1);
 
     } else {
         accumulatedDisplayTime =
             accumulatedDisplayTime + SYSTEM_TIME_INCREMENT_MS;        
-    } */
+    }
 }
 
 static void incorrectCodeIndicatorUpdate()

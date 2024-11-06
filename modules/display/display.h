@@ -21,7 +21,7 @@ typedef struct {
 
 void displayInit( displayConnection_t connection );
  
-void displayCharPositionWrite( uint8_t charPositionX, uint8_t charPositionY );
+void displayCharPositionWrite( unsigned char charPositionX, unsigned char charPositionY );
 
 void displayStringWrite( const char * str );
 
